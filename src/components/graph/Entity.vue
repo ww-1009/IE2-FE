@@ -1,0 +1,393 @@
+<template>
+  <div>
+    <el-breadcrumb style="margin-bottom: 0px" separator-class="el-icon-arrow-right">
+      <el-breadcrumb-item :to="{ path: '/entity' }"
+        >实体图</el-breadcrumb-item
+      >
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item
+          :index="item"
+          v-for="item in hasSearched"
+          :key="item"
+          @click.native="searchagain(item)"
+          >{{ item }}</el-breadcrumb-item
+        >
+      </el-breadcrumb>
+    </el-breadcrumb>
+    <el-row>
+      <el-col :span="17">
+        <el-card style="width: 97%">
+          <el-row>
+            <el-col :span="10">
+              <div class="sub-title"></div>
+              <el-autocomplete
+                class="inline-input"
+                v-model="inputStr"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入内容"
+                :trigger-on-focus="false"
+                @select="handleSelect"
+                style="width: 300px"
+              >
+                <el-button
+                  slot="append"
+                  icon="el-icon-search"
+                  @click="queryNasdaq()"
+                ></el-button>
+              </el-autocomplete>
+            </el-col>
+            <el-col :span="14">
+              <el-select v-model="value" placeholder="请选择查询深度">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-col>
+          </el-row>
+          <el-divider></el-divider>
+
+          <div
+            style="width: 100%; height: 500px; float: left; margin-top: 20px"
+            ref="graph"
+            v-loading="loading"
+            element-loading-text="拼命加载中"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0)"
+          >
+            <el-empty description="暂无图谱" :image-size="200"></el-empty>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="7">
+        <el-card style="height: 630px"> </el-card>
+      </el-col>
+    </el-row>
+  </div>
+</template>
+
+<script>
+import { createNamespacedHelpers } from "vuex";
+
+const { mapMutations, mapState, mapGetters, mapActions } =
+  createNamespacedHelpers("mystrategy");
+
+export default {
+  data() {
+    return {
+      Mychart: null,
+      possible_out: [],
+      options: [
+        {
+          value: "1",
+          label: "深度一",
+        },
+        {
+          value: "2",
+          label: "深度二",
+        },
+        {
+          value: "3",
+          label: "深度三",
+        },
+      ],
+      loading: false,
+    };
+  },
+created() {
+  
+},
+  mounted() {
+    if(this.porpertyNode.length!=0||this.entityNode.length!=0){
+      this.upDatecharts()
+    }
+    // console.log(this.entityNode.length)
+  },
+  computed: {
+    inputStr: {
+      get() {
+        return this.$store.state.inputStr;
+      },
+      set(val) {
+        this.$store.commit("changeInputStr", val);
+      },
+    },
+    value: {
+      get() {
+        return this.$store.state.value;
+      },
+      set(val) {
+        this.$store.commit("changeValue", val);
+      },
+    },
+    hasSearched:{
+      get() {
+        return this.$store.state.hasSearched;
+      },
+      set(val) {
+        this.$store.commit("changeSearched", val);
+      },
+    },
+    entityNode:{
+      get() {
+        return this.$store.state.entityNode;
+      },
+      set(val) {
+        this.$store.commit("changeEntityNode", val);
+      },
+    },
+    entityLinks:{
+      get() {
+        return this.$store.state.entityLinks;
+      },
+      set(val) {
+        this.$store.commit("changeEntityLinks", val);
+      },
+    },
+    porpertyNode:{
+      get() {
+        return this.$store.state.porpertyNode;
+      },
+      set(val) {
+        this.$store.commit("changePorpertyNode", val);
+      },
+    },
+  },
+  methods: {
+    searchagain(item) {
+      this.inputStr = item;
+      this.queryNasdaq();
+    },
+    //查询框
+    querySearch(queryString, cb) {
+      this.queryindex();
+      // console.log(this.possible_out);
+      var possible_out = this.possible_out;
+      var results = queryString
+        ? possible_out.filter(this.createFilter(queryString))
+        : possible_out;
+      // 调用 callback 返回建议列表的数据
+      // console.log(results);
+      cb(results);
+    },
+    createFilter(queryString) {
+      return (possible_out) => {
+        return (
+          possible_out.value
+            .toLowerCase()
+            .indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleSelect(item) {
+      console.log(item);
+    },
+    //实现信息模糊查询
+    queryindex() {
+      //使用Ajax请求--POST-->传递InputStr
+      let that = this;
+      //开始Ajax请求
+      this.$http
+        .post("nasdaq/index_7/", {
+          inputstr: that.inputStr,
+        })
+        .then(function (res) {
+          if (res.data.code === 1) {
+            that.possible_out = res.data.data;
+            // console.log(that.possible_out);
+            //提示：
+          } else {
+            //失败的提示！
+            that.$message.error(res.data.msg);
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+          that.$message.error("获取后端查询结果出现异常!");
+        });
+    },
+
+    //查询按钮
+    queryNasdaq() {
+      this.getEntityData();
+    },
+    handleOpen(key, keyPath) {
+      console.log(key, keyPath);
+    },
+    handleClose(key, keyPath) {
+      console.log(key, keyPath);
+    },
+    //初始化图谱
+    initechart() {
+      this.Mychart = this.$echarts.init(this.$refs.graph);
+      // console.log("porpertyinitecharts");
+    },
+    //更新图谱
+    upDatecharts() {
+      this.initechart();
+      let that = this;
+      var data = this.entityNode;
+      var links = this.entityLinks;
+      var option = {
+        title: {
+          text: "",
+        },
+        tooltip: {},
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: "quinticInOut",
+        label: {
+          normal: {
+            show: true,
+            textStyle: {
+              fontSize: 12,
+            },
+          },
+        },
+        legend: {
+          x: "center",
+          show: false,
+        },
+        series: [
+          {
+            type: "graph",
+            layout: "force",
+            symbolSize: 42,
+            focusNodeAdjacency: true,
+            roam: true,
+            edgeSymbol: ["none", "arrow"],
+            categories: [
+              {
+                name: "查询实体",
+                itemStyle: {
+                  normal: {
+                    color: "#009800",
+                  },
+                },
+              },
+              {
+                name: "一级实体",
+                itemStyle: {
+                  normal: {
+                    color: "#4592FF",
+                  },
+                },
+              },
+              {
+                name: "二级实体",
+                itemStyle: {
+                  normal: {
+                    color: "#C71585",
+                  },
+                },
+              },
+              {
+                name: "class",
+                itemStyle: {
+                  normal: {
+                    color: "#C72585",
+                  },
+                },
+              },
+            ],
+            label: {
+              normal: {
+                show: true,
+                textStyle: {
+                  fontSize: 10,
+                },
+              },
+            },
+            force: {
+              repulsion: 500,
+            },
+            edgeSymbolSize: [4, 50],
+            edgeLabel: {
+              normal: {
+                show: true,
+                textStyle: {
+                  fontSize: 10,
+                },
+                formatter: "{c}",
+              },
+            },
+            data: data,
+            links: links,
+            lineStyle: {
+              normal: {
+                opacity: 0.9,
+                width: 1.3,
+                curveness: 0,
+                color: "#262626",
+              },
+            },
+          },
+        ],
+      };
+      this.Mychart.setOption(option);
+      this.loading = false;
+      //配置点击事件
+      this.Mychart.on("click", function (params) {
+        if (params.dataType == "node") {
+          that.inputStr = params.name;
+          // console.log(that.MinputStr);
+          that.getEntityData();
+        }
+      });
+    },
+    //获取entity图谱数据
+    getEntityData() {
+      //使用Ajax请求--POST-->传递InputStr
+      this.loading = true;
+      let that = this;
+      //开始Ajax请求
+      this.$http
+        .post("nasdaq/entitydata/", {
+          inputstr: that.inputStr,
+          depth: that.value,
+        })
+        .then(function (res) {
+          if (res.data.code === 1) {
+            that.entityNode = res.data.data[0];
+            that.entityLinks = res.data.data[1];
+            var backobj=res.data;
+            // console.log(res.data);
+            console.log('OBJ',backobj);
+            // console.log(that.links);
+            //提示：
+          } else {
+            //失败的提示！
+            that.$message.error(res.data.msg);
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+          that.$message.error("entity查询结果出现异常!");
+        });
+    },
+  },
+  watch: {
+    entityNode(n, o) {
+      if (n != []) {
+        this.upDatecharts();
+        // console.log(this.hasSearched);
+        this.hasSearched.push(this.inputStr);
+      }
+    },
+    // porpertyNode(n, o) {
+    //   this.upDatecharts(this.Mtype);
+    // },
+    // inputStr(n, o) {
+    //   if (n != o) {
+    //     this.MinputStr = n;
+    //   }
+    // },
+    // value(n, o) {
+    //   this.Mvalue = n;
+    // },
+  },
+};
+</script>
+   
