@@ -51,7 +51,7 @@
           <el-divider></el-divider>
 
           <div
-            style="width: 100%; height: 500px; float: left; margin-top: 20px"
+            style="width: 100%; height: 470px; float: left; "
             ref="graph"
             v-loading="loading"
             element-loading-text="拼命加载中"
@@ -63,7 +63,9 @@
         </el-card>
       </el-col>
       <el-col :span="7">
-        <el-card style="height: 630px"> </el-card>
+        <el-card style="height: 580px"> 
+          <Myimage></Myimage>
+        </el-card>
       </el-col>
     </el-row>
   </div>
@@ -71,11 +73,12 @@
 
 <script>
 import { createNamespacedHelpers } from "vuex";
-
+import Myimage from "@/components/Image";
 const { mapMutations, mapState, mapGetters, mapActions } =
   createNamespacedHelpers("mystrategy");
 
 export default {
+  components: { Myimage },
   data() {
     return {
       Mychart: null,
@@ -105,6 +108,7 @@ created() {
       this.upDatecharts()
     }
     // console.log(this.entityNode.length)
+    
   },
   computed: {
     inputStr: {
@@ -233,7 +237,7 @@ created() {
       var links = this.entityLinks;
       var option = {
         title: {
-          text: "",
+          text: that.inputStr+"实体图",
         },
         tooltip: {},
         animationDurationUpdate: 1500,

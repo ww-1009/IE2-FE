@@ -12,6 +12,8 @@ export default new Vuex.Store({
     entityLinks: [],
     porpertyNode:[],
     porpertyLinks:[],
+    typeNode:[],
+    typeLinks:[],
   },
   mutations: {
     changeInputStr(state,item){
@@ -28,6 +30,12 @@ export default new Vuex.Store({
     },
     changeEntityLinks(state,item){
       state.entityLinks=item
+    },
+    changetypeLinks(state,item){
+      state.typeLinks=item
+    },
+    changetypeNode(state,item){
+      state.typeNode=item
     },
     changePorpertyLinks(state,item){
       state.porpertyLinks=item

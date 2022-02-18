@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-breadcrumb style="margin-bottom: 0px" separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/porperty' }"
-        >属性图</el-breadcrumb-item
+      <el-breadcrumb-item :to="{ path: '/type' }"
+        >类型图</el-breadcrumb-item
       >
       <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item
@@ -49,8 +49,9 @@
             </el-col>
           </el-row>
           <el-divider></el-divider>
+
           <div
-            style="width: 100%; height: 470px; float: left;"
+            style="width: 100%; height: 470px; float: left; "
             ref="graph"
             v-loading="loading"
             element-loading-text="拼命加载中"
@@ -69,6 +70,11 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from "vuex";
+
+const { mapMutations, mapState, mapGetters, mapActions } =
+  createNamespacedHelpers("mystrategy");
+
 export default {
   data() {
     return {
@@ -88,15 +94,18 @@ export default {
           label: "深度三",
         },
       ],
-      
       loading: false,
     };
   },
+created() {
+  
+},
   mounted() {
-    if(this.porpertyNode.length!=0||this.entityNode.length!=0){
+    if(this.porpertyNode.length!=0||this.typeNode.length!=0){
       this.upDatecharts()
     }
-    // console.log(this.entityNode.length)
+    // console.log(this.typeNode.length)
+    
   },
   computed: {
     inputStr: {
@@ -115,7 +124,7 @@ export default {
         this.$store.commit("changeValue", val);
       },
     },
-    hasSearched: {
+    hasSearched:{
       get() {
         return this.$store.state.hasSearched;
       },
@@ -123,28 +132,28 @@ export default {
         this.$store.commit("changeSearched", val);
       },
     },
-    porpertyNode: {
+    typeNode:{
+      get() {
+        return this.$store.state.typeNode;
+      },
+      set(val) {
+        this.$store.commit("changetypeNode", val);
+      },
+    },
+    typeLinks:{
+      get() {
+        return this.$store.state.typeLinks;
+      },
+      set(val) {
+        this.$store.commit("changetypeLinks", val);
+      },
+    },
+    porpertyNode:{
       get() {
         return this.$store.state.porpertyNode;
       },
       set(val) {
         this.$store.commit("changePorpertyNode", val);
-      },
-    },
-    porpertyLinks: {
-      get() {
-        return this.$store.state.porpertyLinks;
-      },
-      set(val) {
-        this.$store.commit("changePorpertyLinks", val);
-      },
-    },
-     entityNode:{
-      get() {
-        return this.$store.state.entityNode;
-      },
-      set(val) {
-        this.$store.commit("changeEntityNode", val);
       },
     },
   },
@@ -204,7 +213,7 @@ export default {
 
     //查询按钮
     queryNasdaq() {
-      this.getPorpertyData();
+      this.gettypeData();
     },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
@@ -220,11 +229,12 @@ export default {
     //更新图谱
     upDatecharts() {
       this.initechart();
-      var data = this.porpertyNode;
-      var links = this.porpertyLinks;
+      let that = this;
+      var data = this.typeNode;
+      var links = this.typeLinks;
       var option = {
         title: {
-          text: this.inputStr+"属性图",
+          text: that.inputStr+"类型图",
         },
         tooltip: {},
         animationDurationUpdate: 1500,
@@ -259,7 +269,7 @@ export default {
                 },
               },
               {
-                name: "instance",
+                name: "一级实体",
                 itemStyle: {
                   normal: {
                     color: "#4592FF",
@@ -267,7 +277,7 @@ export default {
                 },
               },
               {
-                name: "class",
+                name: "二级实体",
                 itemStyle: {
                   normal: {
                     color: "#C71585",
@@ -319,24 +329,34 @@ export default {
       };
       this.Mychart.setOption(option);
       this.loading = false;
+      //配置点击事件
+      // this.Mychart.on("click", function (params) {
+      //   if (params.dataType == "node") {
+      //     that.inputStr = params.name;
+      //     // console.log(that.MinputStr);
+      //     that.gettypeData();
+      //   }
+      // });
     },
-
-    //获取porperty图谱数据
-    getPorpertyData() {
+    //获取type图谱数据
+    gettypeData() {
       //使用Ajax请求--POST-->传递InputStr
-      // this.loading=true;
+      this.loading = true;
       let that = this;
       //开始Ajax请求
       this.$http
-        .post("nasdaq/porpertydata/", {
+        .post("nasdaq/entitydata/", {
           inputstr: that.inputStr,
+          depth: that.value,
         })
         .then(function (res) {
           if (res.data.code === 1) {
-            that.porpertyNode = res.data.data[0];
-            that.Treedata = res.data.data[1];
-            // console.log(that.Treedata);
-            // that.links = res.data.data[1];
+            that.typeNode = res.data.data[0];
+            that.typeLinks = res.data.data[1];
+            var backobj=res.data;
+            // console.log(res.data);
+            console.log('OBJ',backobj);
+            // console.log(that.links);
             //提示：
           } else {
             //失败的提示！
@@ -345,14 +365,30 @@ export default {
         })
         .catch(function (err) {
           console.log(err);
-          that.$message.error("porperty查询结果出现异常！");
+          that.$message.error("type查询结果出现异常!");
         });
     },
   },
   watch: {
-    porpertyNode(n, o) {
-      this.upDatecharts();
+    typeNode(n, o) {
+      if (n != []) {
+        this.upDatecharts();
+        // console.log(this.hasSearched);
+        // this.hasSearched.push(this.inputStr);
+      }
     },
+    // porpertyNode(n, o) {
+    //   this.upDatecharts(this.Mtype);
+    // },
+    // inputStr(n, o) {
+    //   if (n != o) {
+    //     this.MinputStr = n;
+    //   }
+    // },
+    // value(n, o) {
+    //   this.Mvalue = n;
+    // },
   },
 };
 </script>
+   

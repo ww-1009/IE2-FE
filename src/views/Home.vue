@@ -22,6 +22,10 @@
             <i class="el-icon-share"></i>
             <span slot="title">实体关系图</span>
           </el-menu-item>
+           <el-menu-item index="/type">
+            <i class="el-icon-orange"></i>
+            <span slot="title">类型图</span>
+          </el-menu-item>
           <el-menu-item index="/porperty">
             <i class="el-icon-orange"></i>
             <span slot="title">属性图</span>
