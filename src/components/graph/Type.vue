@@ -63,7 +63,9 @@
         </el-card>
       </el-col>
       <el-col :span="7">
-        <el-card style="height: 580px"> </el-card>
+        <el-card style="height: 580px"> 
+          <Myimage></Myimage>
+        </el-card>
       </el-col>
     </el-row>
   </div>
@@ -71,11 +73,12 @@
 
 <script>
 import { createNamespacedHelpers } from "vuex";
-
+import Myimage from "@/components/Image";
 const { mapMutations, mapState, mapGetters, mapActions } =
   createNamespacedHelpers("mystrategy");
 
 export default {
+  components: { Myimage },
   data() {
     return {
       Mychart: null,
@@ -370,13 +373,13 @@ created() {
     },
   },
   watch: {
-    typeNode(n, o) {
-      if (n != []) {
-        this.upDatecharts();
+    // typeNode(n, o) {
+    //   if (n != []) {
+    //     this.upDatecharts();
         // console.log(this.hasSearched);
         // this.hasSearched.push(this.inputStr);
-      }
-    },
+      // }
+    // },
     // porpertyNode(n, o) {
     //   this.upDatecharts(this.Mtype);
     // },

@@ -62,14 +62,18 @@
         </el-card>
       </el-col>
       <el-col :span="7">
-        <el-card style="height: 580px"> </el-card>
+        <el-card style="height: 580px"> 
+          <Myimage></Myimage>
+        </el-card>
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
+import Myimage from "@/components/Image";
 export default {
+  components: { Myimage },
   data() {
     return {
       Mychart: null,

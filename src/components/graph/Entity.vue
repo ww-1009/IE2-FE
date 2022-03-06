@@ -8,7 +8,7 @@
         <el-breadcrumb-item
           :index="item"
           v-for="item in hasSearched"
-          :key="item"
+          :key="hasSearched.indexOf(item)"
           @click.native="searchagain(item)"
           >{{ item }}</el-breadcrumb-item
         >
@@ -104,6 +104,7 @@ created() {
   
 },
   mounted() {
+    
     if(this.porpertyNode.length!=0||this.entityNode.length!=0){
       this.upDatecharts()
     }
@@ -346,6 +347,17 @@ created() {
       //使用Ajax请求--POST-->传递InputStr
       this.loading = true;
       let that = this;
+      for(let i=0;i<that.hasSearched.length;i++){
+        if(that.inputstr==that.hasSearched[i]){
+          console.log(that.hasSearched[i])
+          that.hasSearched.splice(i,that.hasSearched.length-i);
+          break;
+        } 
+      }
+      if(that.hasSearched.length==6)
+        that.hasSearched.shift();
+      that.hasSearched.push(that.inputStr);
+      console.log(that.hasSearched)
       //开始Ajax请求
       this.$http
         .post("nasdaq/entitydata/", {
@@ -358,7 +370,7 @@ created() {
             that.entityLinks = res.data.data[1];
             var backobj=res.data;
             // console.log(res.data);
-            console.log('OBJ',backobj);
+            // console.log('OBJ',backobj);
             // console.log(that.links);
             //提示：
           } else {
@@ -377,20 +389,9 @@ created() {
       if (n != []) {
         this.upDatecharts();
         // console.log(this.hasSearched);
-        this.hasSearched.push(this.inputStr);
+        
       }
     },
-    // porpertyNode(n, o) {
-    //   this.upDatecharts(this.Mtype);
-    // },
-    // inputStr(n, o) {
-    //   if (n != o) {
-    //     this.MinputStr = n;
-    //   }
-    // },
-    // value(n, o) {
-    //   this.Mvalue = n;
-    // },
   },
 };
 </script>

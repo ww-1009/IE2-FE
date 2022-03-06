@@ -57,6 +57,25 @@ export default {
   },
   created() {
     this.activePath = window.sessionStorage.getItem('activePath')
+    this.getNewsTop()
+  },
+  computed:{
+    newstop: {
+      get() {
+        return this.$store.state.newstop;
+      },
+      set(val) {
+        this.$store.commit("changeNewsTop", val);
+      },
+    },
+     img: {
+      get() {
+        return this.$store.state.img;
+      },
+      set(val) {
+        this.$store.commit("changeImg", val);
+      },
+    },
   },
 
   methods: {
@@ -70,6 +89,26 @@ export default {
       window.sessionStorage.setItem('activePath', activePath)
       this.activePath = activePath
     },
+    getNewsTop(){
+      let that=this;
+      this.$http
+        .get("nasdaq/newstop/")
+        .then(function (res) {
+          if (res.data.code === 1) {
+            that.newstop = res.data.data[0];
+            that.img=res.data.data[1];
+            // console.log(that.newstop);
+            //提示：
+          } else {
+            //失败的提示！
+            that.$message.error(res.data.msg);
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+          that.$message.error("获取后端查询结果出现异常!");
+        });
+    }
   },
 };
 </script>

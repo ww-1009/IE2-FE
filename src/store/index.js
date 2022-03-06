@@ -14,6 +14,8 @@ export default new Vuex.Store({
     porpertyLinks:[],
     typeNode:[],
     typeLinks:[],
+    newstop:[],
+    img:"",
   },
   mutations: {
     changeInputStr(state,item){
@@ -42,6 +44,12 @@ export default new Vuex.Store({
     },
     changePorpertyNode(state,item){
       state.porpertyNode=item
+    },
+    changeNewsTop(state,item){
+      state.newstop=item
+    },
+    changeImg(state,item){
+      state.img=item
     },
   },
   actions: {
