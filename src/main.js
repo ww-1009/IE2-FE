@@ -11,7 +11,7 @@ import './assets/css/global.css'
 // 导入字体图标
 import './assets/fonts/iconfont.css'
 
-axios.defaults.baseURL = ' http://127.0.0.1:8000/'
+axios.defaults.baseURL = ' http://lixinwuwei.tpddns.cn:9123/'
 Vue.prototype.$http = axios
 
 Vue.prototype.$echarts = echarts

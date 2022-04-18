@@ -2,7 +2,7 @@
   <div>
     <el-breadcrumb style="margin-bottom: 0px" separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/type' }"
-        >类型图</el-breadcrumb-item
+        >类型关系图</el-breadcrumb-item
       >
       <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item
@@ -17,53 +17,22 @@
     <el-row>
       <el-col :span="17">
         <el-card style="width: 97%">
-          <el-row>
-            <el-col :span="10">
-              <div class="sub-title"></div>
-              <el-autocomplete
-                class="inline-input"
-                v-model="inputStr"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入内容"
-                :trigger-on-focus="false"
-                @select="handleSelect"
-                style="width: 300px"
-              >
-                <el-button
-                  slot="append"
-                  icon="el-icon-search"
-                  @click="queryNasdaq()"
-                ></el-button>
-              </el-autocomplete>
-            </el-col>
-            <el-col :span="14">
-              <el-select v-model="value" placeholder="请选择查询深度">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-divider></el-divider>
-
+          <Mysearch></Mysearch>
+          <!-- <el-divider></el-divider> -->
           <div
-            style="width: 100%; height: 470px; float: left; "
+            style="width: 100%; height: 640px; float: left; "
             ref="graph"
             v-loading="loading"
             element-loading-text="拼命加载中"
             element-loading-spinner="el-icon-loading"
             element-loading-background="rgba(0, 0, 0, 0)"
           >
-            <el-empty description="暂无图谱" :image-size="200"></el-empty>
+            <el-empty description="暂无图谱" :image-size="200" style="margin-top:70px"></el-empty>
           </div>
         </el-card>
       </el-col>
       <el-col :span="7">
-        <el-card style="height: 580px"> 
+        <el-card style="height: 800px"> 
           <Myimage></Myimage>
         </el-card>
       </el-col>
@@ -74,11 +43,17 @@
 <script>
 import { createNamespacedHelpers } from "vuex";
 import Myimage from "@/components/Image";
+import Mysearch from "@/components/Search";
 const { mapMutations, mapState, mapGetters, mapActions } =
   createNamespacedHelpers("mystrategy");
 
+function myAerlt(val) {
+       var obj = JSON.parse(val);
+        console.log(obj)
+    }
+window.myAerlt = myAerlt;
 export default {
-  components: { Myimage },
+  components: { Myimage,Mysearch },
   data() {
     return {
       Mychart: null,
@@ -104,11 +79,10 @@ created() {
   
 },
   mounted() {
-    if(this.porpertyNode.length!=0||this.typeNode.length!=0){
+    this.path="类型关系图"
+     if(this.name!=''){
       this.upDatecharts()
-    }
-    // console.log(this.typeNode.length)
-    
+    }    
   },
   computed: {
     inputStr: {
@@ -127,6 +101,14 @@ created() {
         this.$store.commit("changeValue", val);
       },
     },
+    name: {
+      get() {
+        return this.$store.state.name;
+      },
+      set(val) {
+        this.$store.commit("changeName", val);
+      },
+    },
     hasSearched:{
       get() {
         return this.$store.state.hasSearched;
@@ -140,7 +122,7 @@ created() {
         return this.$store.state.typeNode;
       },
       set(val) {
-        this.$store.commit("changetypeNode", val);
+        this.$store.commit("changeTypeNode", val);
       },
     },
     typeLinks:{
@@ -148,75 +130,48 @@ created() {
         return this.$store.state.typeLinks;
       },
       set(val) {
-        this.$store.commit("changetypeLinks", val);
+        this.$store.commit("changeTypeLinks", val);
       },
     },
-    porpertyNode:{
+    typeMap: {
       get() {
-        return this.$store.state.porpertyNode;
+        return this.$store.state.typeMap;
       },
       set(val) {
-        this.$store.commit("changePorpertyNode", val);
+        this.$store.commit("changeTypeMap", val);
       },
     },
+    statu: {
+      get() {
+        return this.$store.state.statu;
+      },
+      set(val) {
+        this.$store.commit("changeStatu", val);
+      },
+    },
+    path: {
+      get() {
+        return this.$store.state.path;
+      },
+      set(val) {
+        this.$store.commit("changePath", val);
+      },
+    },
+    first: {
+      get() {
+        return this.$store.state.first;
+      },
+      set(val) {
+        this.$store.commit("changeFirst", val);
+      },
+    },
+    
   },
   methods: {
+    
     searchagain(item) {
       this.inputStr = item;
-      this.queryNasdaq();
-    },
-    //查询框
-    querySearch(queryString, cb) {
-      this.queryindex();
-      // console.log(this.possible_out);
-      var possible_out = this.possible_out;
-      var results = queryString
-        ? possible_out.filter(this.createFilter(queryString))
-        : possible_out;
-      // 调用 callback 返回建议列表的数据
-      // console.log(results);
-      cb(results);
-    },
-    createFilter(queryString) {
-      return (possible_out) => {
-        return (
-          possible_out.value
-            .toLowerCase()
-            .indexOf(queryString.toLowerCase()) === 0
-        );
-      };
-    },
-    handleSelect(item) {
-      console.log(item);
-    },
-    //实现信息模糊查询
-    queryindex() {
-      //使用Ajax请求--POST-->传递InputStr
-      let that = this;
-      //开始Ajax请求
-      this.$http
-        .post("nasdaq/index_7/", {
-          inputstr: that.inputStr,
-        })
-        .then(function (res) {
-          if (res.data.code === 1) {
-            that.possible_out = res.data.data;
-            // console.log(that.possible_out);
-            //提示：
-          } else {
-            //失败的提示！
-            that.$message.error(res.data.msg);
-          }
-        })
-        .catch(function (err) {
-          console.log(err);
-          that.$message.error("获取后端查询结果出现异常!");
-        });
-    },
-
-    //查询按钮
-    queryNasdaq() {
-      this.gettypeData();
+      this.statu=!this.statu;
     },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
@@ -236,10 +191,22 @@ created() {
       var data = this.typeNode;
       var links = this.typeLinks;
       var option = {
-        title: {
-          text: that.inputStr+"类型图",
+        // title: {
+        //   text: that.inputStr+"类型图",
+        // },
+        tooltip: {
+          triggerOn: 'click',//点击才会出现提示框
+          enterable: true,//鼠标可以进入提示框
+          formatter: function (params, ticket, callback) {//回调函数
+            // var str="1234"
+            var str="所含实体节点：<br>"+that.typeMap[params.data["id"]]
+            // var str="1<br>2<br>3<br>"
+            //  var str = appendPath(graph.nodes[params.dataIndex].id);
+            //  document.getElementById("div1").innerHTML = str;
+
+             return str;
+         }
         },
-        tooltip: {},
         animationDurationUpdate: 1500,
         animationEasingUpdate: "quinticInOut",
         label: {
@@ -250,6 +217,8 @@ created() {
             },
           },
         },
+
+
         legend: {
           x: "center",
           show: false,
@@ -260,6 +229,7 @@ created() {
             layout: "force",
             symbolSize: 42,
             focusNodeAdjacency: true,
+            legendHoverLink:true,
             roam: true,
             edgeSymbol: ["none", "arrow"],
             categories: [
@@ -305,12 +275,15 @@ created() {
               },
             },
             force: {
-              repulsion: 500,
+              repulsion: 800,
+              gravity:0.03,
+              edgeLength: [70, 100],
+              layoutAnimation:true
             },
             edgeSymbolSize: [4, 50],
             edgeLabel: {
               normal: {
-                show: true,
+                show: false,
                 textStyle: {
                   fontSize: 10,
                 },
@@ -323,7 +296,7 @@ created() {
               normal: {
                 opacity: 0.9,
                 width: 1.3,
-                curveness: 0,
+                curveness: 0.2,
                 color: "#262626",
               },
             },
@@ -331,6 +304,7 @@ created() {
         ],
       };
       this.Mychart.setOption(option);
+      this.first=true;
       this.loading = false;
       //配置点击事件
       // this.Mychart.on("click", function (params) {
@@ -341,57 +315,25 @@ created() {
       //   }
       // });
     },
-    //获取type图谱数据
-    gettypeData() {
-      //使用Ajax请求--POST-->传递InputStr
-      this.loading = true;
-      let that = this;
-      //开始Ajax请求
-      this.$http
-        .post("nasdaq/entitydata/", {
-          inputstr: that.inputStr,
-          depth: that.value,
-        })
-        .then(function (res) {
-          if (res.data.code === 1) {
-            that.typeNode = res.data.data[0];
-            that.typeLinks = res.data.data[1];
-            var backobj=res.data;
-            // console.log(res.data);
-            console.log('OBJ',backobj);
-            // console.log(that.links);
-            //提示：
-          } else {
-            //失败的提示！
-            that.$message.error(res.data.msg);
-          }
-        })
-        .catch(function (err) {
-          console.log(err);
-          that.$message.error("type查询结果出现异常!");
-        });
-    },
   },
   watch: {
-    // typeNode(n, o) {
-    //   if (n != []) {
-    //     this.upDatecharts();
-        // console.log(this.hasSearched);
-        // this.hasSearched.push(this.inputStr);
-      // }
-    // },
-    // porpertyNode(n, o) {
-    //   this.upDatecharts(this.Mtype);
-    // },
-    // inputStr(n, o) {
-    //   if (n != o) {
-    //     this.MinputStr = n;
-    //   }
-    // },
-    // value(n, o) {
-    //   this.Mvalue = n;
-    // },
+    typeNode(n, o) {
+      if (n != []) {
+        this.upDatecharts();
+        let index=this.hasSearched.indexOf(this.name)
+        if(index!=-1){
+          
+          this.hasSearched.splice(index, this.hasSearched.length-index);
+        }
+        if(this.hasSearched.length==6)
+          this.hasSearched.shift();
+        this.hasSearched.push(this.name);
+        // 
+        
+      }
+    },
   },
+  
 };
 </script>
    

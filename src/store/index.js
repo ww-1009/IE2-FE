@@ -7,6 +7,7 @@ export default new Vuex.Store({
   state: {
     inputStr: "",
     value: "1",
+    name:"",
     hasSearched:[],
     entityNode: [],
     entityLinks: [],
@@ -14,8 +15,16 @@ export default new Vuex.Store({
     porpertyLinks:[],
     typeNode:[],
     typeLinks:[],
+    typeMap:{},
     newstop:[],
     img:"",
+    abstract:"",
+    newsImg:[],
+    statu:true,
+    explore:false,
+    key_word_id:0,
+    path:"实体图",
+    first:false,
   },
   mutations: {
     changeInputStr(state,item){
@@ -23,6 +32,9 @@ export default new Vuex.Store({
     },
     changeValue(state,item){
       state.value=item
+    },
+    changeName(state,item){
+      state.name=item
     },
     changeSearched(state,item){
       state.hasSearched=item
@@ -33,11 +45,14 @@ export default new Vuex.Store({
     changeEntityLinks(state,item){
       state.entityLinks=item
     },
-    changetypeLinks(state,item){
+    changeTypeLinks(state,item){
       state.typeLinks=item
     },
-    changetypeNode(state,item){
+    changeTypeNode(state,item){
       state.typeNode=item
+    },
+    changeTypeMap(state,item){
+      state.typeMap=item
     },
     changePorpertyLinks(state,item){
       state.porpertyLinks=item
@@ -50,6 +65,27 @@ export default new Vuex.Store({
     },
     changeImg(state,item){
       state.img=item
+    },
+    changeAbstract(state,item){
+      state.abstract=item
+    },
+    changeNewsimg(state,item){
+      state.newsImg=item
+    },
+    changeStatu(state,item){
+      state.statu=item
+    },
+    changeExplore(state,item){
+      state.explore=item
+    },
+    changeKey_word_id(state,item){
+      state.key_word_id=item
+    },
+    changePath(state,item){
+      state.path=item
+    },
+    changeFirst(state,item){
+      state.first=item
     },
   },
   actions: {

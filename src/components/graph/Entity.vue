@@ -1,9 +1,10 @@
 <template>
   <div>
-    <el-breadcrumb style="margin-bottom: 0px" separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/entity' }"
-        >实体图</el-breadcrumb-item
-      >
+    <el-breadcrumb
+      style="margin-bottom: 0px"
+      separator-class="el-icon-arrow-right"
+    >
+      <el-breadcrumb-item :to="{ path: '/entity' }">实体图</el-breadcrumb-item>
       <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item
           :index="item"
@@ -17,53 +18,53 @@
     <el-row>
       <el-col :span="17">
         <el-card style="width: 97%">
-          <el-row>
-            <el-col :span="10">
-              <div class="sub-title"></div>
-              <el-autocomplete
-                class="inline-input"
-                v-model="inputStr"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入内容"
-                :trigger-on-focus="false"
-                @select="handleSelect"
-                style="width: 300px"
-              >
-                <el-button
-                  slot="append"
-                  icon="el-icon-search"
-                  @click="queryNasdaq()"
-                ></el-button>
-              </el-autocomplete>
-            </el-col>
-            <el-col :span="14">
-              <el-select v-model="value" placeholder="请选择查询深度">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-divider></el-divider>
-
+          <Mysearch></Mysearch>
+         
           <div
-            style="width: 100%; height: 470px; float: left; "
+            style="width: 100%; height: 640px; float: left"
             ref="graph"
             v-loading="loading"
             element-loading-text="拼命加载中"
             element-loading-spinner="el-icon-loading"
             element-loading-background="rgba(0, 0, 0, 0)"
           >
-            <el-empty description="暂无图谱" :image-size="200"></el-empty>
+            <el-empty description="暂无图谱" :image-size="200" style="margin-top:70px"></el-empty>
           </div>
+          <el-dialog
+            :title="this.inputStr"
+            :visible.sync="dialogVisible"
+            width="35%"
+            :before-close="handleClose"
+          >
+          <el-card :body-style="{ padding: '0px' }">
+          <el-row :gutter="20">
+            <el-col :span="9">
+              <div class="grid-content bg-purple">
+                <el-image :src="img">
+                  <div slot="placeholder" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                  </div>
+                </el-image>
+              </div>
+            </el-col>
+            <el-col :span="15">
+              <div class="grid-content bg-purple">
+                {{this.abstract}}
+              </div>
+            </el-col>
+          </el-row>
+          </el-card>
+            <span slot="footer" class="dialog-footer">
+              <el-button type="primary" @click="dialogVisible = false"
+                >确 定</el-button
+              >
+            </span>
+          
+          </el-dialog>
         </el-card>
       </el-col>
       <el-col :span="7">
-        <el-card style="height: 580px"> 
+        <el-card style="height: 800px">
           <Myimage></Myimage>
         </el-card>
       </el-col>
@@ -74,11 +75,12 @@
 <script>
 import { createNamespacedHelpers } from "vuex";
 import Myimage from "@/components/Image";
+import Mysearch from "@/components/Search";
 const { mapMutations, mapState, mapGetters, mapActions } =
   createNamespacedHelpers("mystrategy");
 
 export default {
-  components: { Myimage },
+  components: { Myimage, Mysearch },
   data() {
     return {
       Mychart: null,
@@ -98,20 +100,19 @@ export default {
         },
       ],
       loading: false,
+      dialogVisible: false,
     };
   },
-created() {
-  
-},
+  created() {},
   mounted() {
-    
-    if(this.porpertyNode.length!=0||this.entityNode.length!=0){
-      this.upDatecharts()
+    this.path="实体图"
+    if (this.name != "") {
+      this.upDatecharts();
     }
     // console.log(this.entityNode.length)
-    
   },
   computed: {
+    
     inputStr: {
       get() {
         return this.$store.state.inputStr;
@@ -128,7 +129,15 @@ created() {
         this.$store.commit("changeValue", val);
       },
     },
-    hasSearched:{
+    name: {
+      get() {
+        return this.$store.state.name;
+      },
+      set(val) {
+        this.$store.commit("changeName", val);
+      },
+    },
+    hasSearched: {
       get() {
         return this.$store.state.hasSearched;
       },
@@ -136,7 +145,7 @@ created() {
         this.$store.commit("changeSearched", val);
       },
     },
-    entityNode:{
+    entityNode: {
       get() {
         return this.$store.state.entityNode;
       },
@@ -144,7 +153,7 @@ created() {
         this.$store.commit("changeEntityNode", val);
       },
     },
-    entityLinks:{
+    entityLinks: {
       get() {
         return this.$store.state.entityLinks;
       },
@@ -152,73 +161,61 @@ created() {
         this.$store.commit("changeEntityLinks", val);
       },
     },
-    porpertyNode:{
+    img: {
       get() {
-        return this.$store.state.porpertyNode;
+        return this.$store.state.img;
       },
       set(val) {
-        this.$store.commit("changePorpertyNode", val);
+        this.$store.commit("changeImg", val);
+      },
+    },
+    abstract: {
+      get() {
+        return this.$store.state.abstract;
+      },
+      set(val) {
+        this.$store.commit("changeAbstract", val);
+      },
+    },
+    statu: {
+      get() {
+        return this.$store.state.statu;
+      },
+      set(val) {
+        this.$store.commit("changeStatu", val);
+      },
+    },
+    key_word_id: {
+      get() {
+        return this.$store.state.key_word_id;
+      },
+      set(val) {
+        this.$store.commit("changeKey_word_id", val);
+      },
+    },
+    path: {
+      get() {
+        return this.$store.state.path;
+      },
+      set(val) {
+        this.$store.commit("changePath", val);
+      },
+    },
+    first: {
+      get() {
+        return this.$store.state.first;
+      },
+      set(val) {
+        this.$store.commit("changeFirst", val);
       },
     },
   },
   methods: {
     searchagain(item) {
       this.inputStr = item;
-      this.queryNasdaq();
-    },
-    //查询框
-    querySearch(queryString, cb) {
-      this.queryindex();
-      // console.log(this.possible_out);
-      var possible_out = this.possible_out;
-      var results = queryString
-        ? possible_out.filter(this.createFilter(queryString))
-        : possible_out;
-      // 调用 callback 返回建议列表的数据
-      // console.log(results);
-      cb(results);
-    },
-    createFilter(queryString) {
-      return (possible_out) => {
-        return (
-          possible_out.value
-            .toLowerCase()
-            .indexOf(queryString.toLowerCase()) === 0
-        );
-      };
-    },
-    handleSelect(item) {
-      console.log(item);
-    },
-    //实现信息模糊查询
-    queryindex() {
-      //使用Ajax请求--POST-->传递InputStr
-      let that = this;
-      //开始Ajax请求
-      this.$http
-        .post("nasdaq/index_7/", {
-          inputstr: that.inputStr,
-        })
-        .then(function (res) {
-          if (res.data.code === 1) {
-            that.possible_out = res.data.data;
-            // console.log(that.possible_out);
-            //提示：
-          } else {
-            //失败的提示！
-            that.$message.error(res.data.msg);
-          }
-        })
-        .catch(function (err) {
-          console.log(err);
-          that.$message.error("获取后端查询结果出现异常!");
-        });
+      this.statu=!this.statu;
     },
 
-    //查询按钮
-    queryNasdaq() {
-      this.getEntityData();
-    },
     handleOpen(key, keyPath) {
       console.log(key, keyPath);
     },
@@ -237,12 +234,12 @@ created() {
       var data = this.entityNode;
       var links = this.entityLinks;
       var option = {
-        title: {
-          text: that.inputStr+"实体图",
-        },
+        // title: {
+        //   text: that.inputStr + "实体图",
+        // },
         tooltip: {},
-        animationDurationUpdate: 1500,
-        animationEasingUpdate: "quinticInOut",
+        animationDurationUpdate: 200,
+        // animationEasingUpdate: "quinticInOut",
         label: {
           normal: {
             show: true,
@@ -261,7 +258,9 @@ created() {
             layout: "force",
             symbolSize: 42,
             focusNodeAdjacency: true,
+            legendHoverLink:true,
             roam: true,
+            draggable:true,
             edgeSymbol: ["none", "arrow"],
             categories: [
               {
@@ -306,9 +305,12 @@ created() {
               },
             },
             force: {
-              repulsion: 500,
+              repulsion: 800,
+              gravity:0.03,
+              edgeLength: [10, 50],
+              layoutAnimation:true
             },
-            edgeSymbolSize: [4, 50],
+            // edgeSymbolSize: [40, 50],
             edgeLabel: {
               normal: {
                 show: true,
@@ -324,7 +326,7 @@ created() {
               normal: {
                 opacity: 0.9,
                 width: 1.3,
-                curveness: 0,
+                curveness: 0.2,
                 color: "#262626",
               },
             },
@@ -332,67 +334,68 @@ created() {
         ],
       };
       this.Mychart.setOption(option);
+      this.first=true;
       this.loading = false;
+      this.Mychart.off('click')
       //配置点击事件
       this.Mychart.on("click", function (params) {
         if (params.dataType == "node") {
-          that.inputStr = params.name;
-          // console.log(that.MinputStr);
-          that.getEntityData();
+          if (params.name == that.name) {
+            that.dialogVisible = true;
+          } else{
+            // console.log(params.data["id"])
+            that.key_word_id=params.data["id"]
+            that.inputStr = params.name;
+            that.statu=!that.statu;
+            // console.log(that.statu)
+          } 
         }
       });
-    },
-    //获取entity图谱数据
-    getEntityData() {
-      //使用Ajax请求--POST-->传递InputStr
-      this.loading = true;
-      let that = this;
-      for(let i=0;i<that.hasSearched.length;i++){
-        if(that.inputstr==that.hasSearched[i]){
-          console.log(that.hasSearched[i])
-          that.hasSearched.splice(i,that.hasSearched.length-i);
-          break;
-        } 
-      }
-      if(that.hasSearched.length==6)
-        that.hasSearched.shift();
-      that.hasSearched.push(that.inputStr);
-      console.log(that.hasSearched)
-      //开始Ajax请求
-      this.$http
-        .post("nasdaq/entitydata/", {
-          inputstr: that.inputStr,
-          depth: that.value,
-        })
-        .then(function (res) {
-          if (res.data.code === 1) {
-            that.entityNode = res.data.data[0];
-            that.entityLinks = res.data.data[1];
-            var backobj=res.data;
-            // console.log(res.data);
-            // console.log('OBJ',backobj);
-            // console.log(that.links);
-            //提示：
-          } else {
-            //失败的提示！
-            that.$message.error(res.data.msg);
-          }
-        })
-        .catch(function (err) {
-          console.log(err);
-          that.$message.error("entity查询结果出现异常!");
-        });
+
     },
   },
   watch: {
-    entityNode(n, o) {
+    name(n, o) {
       if (n != []) {
         this.upDatecharts();
-        // console.log(this.hasSearched);
+        // console.log("gen")
+        let index=this.hasSearched.indexOf(this.name)
+        if(index!=-1){
+          
+          this.hasSearched.splice(index, this.hasSearched.length-index);
+        }
+        if(this.hasSearched.length==6)
+          this.hasSearched.shift();
+        this.hasSearched.push(this.name);
         
       }
+    },
+    entityNode(n, o) {
+      this.upDatecharts();
     },
   },
 };
 </script>
+<style>
+  .text {
+    font-size: 14px;
+  }
+
+  .item {
+    margin-bottom: 18px;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+  }
+  .clearfix:after {
+    clear: both
+  }
+
+  .box-card {
+    width: 480px;
+  }
+</style>
    

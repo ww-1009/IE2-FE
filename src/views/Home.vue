@@ -1,7 +1,7 @@
 <template>
   <el-container class="home-container">
     <el-header>
-      <span>纳斯达克知识图谱</span>
+      <span>&nbsp;&nbsp;&nbsp;Nasdap Graph</span>
     </el-header>
     <!-- 页面主体区域 -->
     <el-container>
@@ -23,8 +23,8 @@
             <span slot="title">实体关系图</span>
           </el-menu-item>
            <el-menu-item index="/type">
-            <i class="el-icon-orange"></i>
-            <span slot="title">类型图</span>
+            <i class="el-icon-menu"></i>
+            <span slot="title">类型关系图</span>
           </el-menu-item>
           <el-menu-item index="/porperty">
             <i class="el-icon-orange"></i>
@@ -44,9 +44,7 @@
 </template>
 
 <script>
-import Graph from "@/components/Graph";
 export default {
-  components: { Graph },
   data() {
     return {
       // 是否折叠
@@ -76,6 +74,14 @@ export default {
         this.$store.commit("changeImg", val);
       },
     },
+    newsimg: {
+      get() {
+        return this.$store.state.newsImg;
+      },
+      set(val) {
+        this.$store.commit("changeNewsimg", val);
+      },
+    },
   },
 
   methods: {
@@ -96,8 +102,8 @@ export default {
         .then(function (res) {
           if (res.data.code === 1) {
             that.newstop = res.data.data[0];
-            that.img=res.data.data[1];
-            // console.log(that.newstop);
+            that.newsimg=res.data.data[1];
+            console.log(that.newstop);
             //提示：
           } else {
             //失败的提示！
